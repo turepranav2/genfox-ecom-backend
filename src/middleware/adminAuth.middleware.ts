@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 
 export const adminAuth = (
@@ -6,14 +7,24 @@ export const adminAuth = (
   res: Response,
   next: NextFunction
 ) => {
-  const { email, password } = req.headers;
+  const authHeader = req.headers.authorization;
 
-  if (
-    email === env.ADMIN_EMAIL &&
-    password === env.ADMIN_PASSWORD
-  ) {
-    return next();
+  if (!authHeader?.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Unauthorized admin" });
   }
 
-  return res.status(403).json({ message: "Admin access denied" });
+  try {
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, env.JWT_SECRET) as {
+      role: string;
+    };
+
+    if (decoded.role !== "ADMIN") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    next();
+  } catch {
+    return res.status(401).json({ message: "Invalid admin token" });
+  }
 };

@@ -4,6 +4,11 @@ const SupplierSchema = new Schema(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+
+    shopName: { type: String },
+    phone: { type: String },
+
     status: {
       type: String,
       enum: ["PENDING", "APPROVED", "REJECTED"],
@@ -13,7 +18,5 @@ const SupplierSchema = new Schema(
   { timestamps: true }
 );
 
-const Supplier =
-  mongoose.models.Supplier || mongoose.model("Supplier", SupplierSchema);
-
-export default Supplier;
+export default mongoose.models.Supplier ||
+  mongoose.model("Supplier", SupplierSchema);
