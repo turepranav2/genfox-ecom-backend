@@ -1,76 +1,83 @@
 import { Response } from "express";
-import Cart from "../models/Cart";
-import Product from "../models/Product";
+import {
+  getCartService,
+  addToCartService,
+  updateCartItemService,
+  removeCartItemService,
+  clearCartService
+} from "../services/cart.service";
 import { UserRequest } from "../middleware/userAuth.middleware";
 
+/* GET CART */
 export const getCart = async (req: UserRequest, res: Response) => {
-  const cart = await Cart.findOne({ user: req.userId }).populate(
-    "items.product"
-  );
+  const cart = await getCartService(req.userId!);
   res.json(cart || { items: [] });
 };
 
+/* ADD ITEM */
 export const addToCart = async (req: UserRequest, res: Response) => {
   const { productId, quantity } = req.body;
 
-  const product = await Product.findById(productId);
-  if (!product) {
-    return res.status(404).json({ message: "Product not found" });
+  if (!productId || !quantity) {
+    return res.status(400).json({ message: "Invalid data" });
   }
 
-  let cart = await Cart.findOne({ user: req.userId });
-
-  if (!cart) {
-    cart = await Cart.create({
-      user: req.userId,
-      items: [{ product: productId, quantity }]
-    });
-  } else {
-    const itemIndex = cart.items.findIndex(
-      (item: any) => item.product.toString() === productId
-    );
-
-    if (itemIndex > -1) {
-      cart.items[itemIndex].quantity += quantity;
-    } else {
-      cart.items.push({ product: productId, quantity });
-    }
-    await cart.save();
-  }
+  const cart = await addToCartService(
+    req.userId!,
+    productId,
+    quantity
+  );
 
   res.json(cart);
 };
 
+/* UPDATE ITEM */
 export const updateCartItem = async (req: UserRequest, res: Response) => {
-  const { productId, quantity } = req.body;
+  const { quantity } = req.body;
 
-  const cart = await Cart.findOne({ user: req.userId });
-  if (!cart) {
-    return res.status(404).json({ message: "Cart not found" });
+  if (!quantity) {
+    return res.status(400).json({ message: "Quantity required" });
   }
 
-  cart.items = cart.items.map((item: any) =>
-    item.product.toString() === productId
-      ? { ...item.toObject(), quantity }
-      : item
+  const productId =
+    typeof req.params.productId === "string"
+      ? req.params.productId
+      : req.params.productId[0];
+
+  const cart = await updateCartItemService(
+    req.userId!,
+    productId,
+    quantity
   );
 
-  await cart.save();
+  if (!cart) {
+    return res.status(404).json({ message: "Item not found" });
+  }
+
   res.json(cart);
 };
 
+/* REMOVE ITEM */
 export const removeCartItem = async (req: UserRequest, res: Response) => {
-  const { productId } = req.params;
+  const productId =
+    typeof req.params.productId === "string"
+      ? req.params.productId
+      : req.params.productId[0];
 
-  const cart = await Cart.findOne({ user: req.userId });
-  if (!cart) {
-    return res.status(404).json({ message: "Cart not found" });
-  }
-
-  cart.items = cart.items.filter(
-    (item: any) => item.product.toString() !== productId
+  const cart = await removeCartItemService(
+    req.userId!,
+    productId
   );
 
-  await cart.save();
+  if (!cart) {
+    return res.status(404).json({ message: "Item not found" });
+  }
+
+  res.json(cart);
+};
+
+/* CLEAR CART */
+export const clearCart = async (req: UserRequest, res: Response) => {
+  const cart = await clearCartService(req.userId!);
   res.json(cart);
 };

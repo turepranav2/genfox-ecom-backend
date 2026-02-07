@@ -14,6 +14,14 @@ const startServer = async () => {
     logger.info("Gracefully shutting down");
     server.close(() => process.exit(0));
   });
+  process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled Rejection:", reason);
+  });
+
+  process.on("uncaughtException", (error) => {
+  console.error("Uncaught Exception:", error);
+  process.exit(1);
+  });
 };
 
 startServer();
