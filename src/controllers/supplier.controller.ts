@@ -5,7 +5,15 @@ import Supplier from "../models/Supplier";
 import { env } from "../config/env";
 
 export const registerSupplier = async (req: Request, res: Response) => {
-  const { name, email, password, phone, shopName } = req.body;
+  if (!req.body) {
+    return res.status(400).json({ message: "Request body missing" });
+  }
+
+  const { name, email, password } = req.body;
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: "All fields required" });
+  }
 
   const existing = await Supplier.findOne({ email });
   if (existing) {
@@ -17,8 +25,6 @@ export const registerSupplier = async (req: Request, res: Response) => {
   await Supplier.create({
     name,
     email,
-    phone,
-    shopName,
     password: hashedPassword,
     status: "PENDING"
   });

@@ -3,7 +3,7 @@ import mongoose, { Schema } from "mongoose";
 const SupplierSchema = new Schema(
   {
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true, index: true },
     password: { type: String, required: true },
 
     shopName: { type: String },

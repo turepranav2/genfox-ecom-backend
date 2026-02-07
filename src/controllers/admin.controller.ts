@@ -5,6 +5,10 @@ import { env } from "../config/env";
 export const adminLogin = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password required" });
+  }
+
   if (
     email !== env.ADMIN_EMAIL ||
     password !== env.ADMIN_PASSWORD
@@ -19,7 +23,6 @@ export const adminLogin = async (req: Request, res: Response) => {
   );
 
   res.json({
-    token,
-    role: "ADMIN"
+    token
   });
 };
