@@ -1,18 +1,18 @@
 import mongoose, { Schema, Types } from "mongoose";
 
 export interface ICartItem {
-  product: Types.ObjectId;
+  productId: Types.ObjectId;
   quantity: number;
 }
 
 export interface ICart {
-  user: Types.ObjectId;
+  userId: Types.ObjectId;
   items: ICartItem[];
 }
 
 const CartItemSchema = new Schema<ICartItem>(
   {
-    product: {
+    productId: {
       type: Schema.Types.ObjectId,
       ref: "Product",
       required: true
@@ -20,7 +20,8 @@ const CartItemSchema = new Schema<ICartItem>(
     quantity: {
       type: Number,
       required: true,
-      min: 1
+      min: 1,
+      default: 1
     }
   },
   { _id: false }
@@ -28,7 +29,7 @@ const CartItemSchema = new Schema<ICartItem>(
 
 const CartSchema = new Schema<ICart>(
   {
-    user: {
+    userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -41,6 +42,15 @@ const CartSchema = new Schema<ICart>(
   },
   { timestamps: true }
 );
+
+CartSchema.set("toJSON", {
+  virtuals: true,
+  transform: (_doc: any, ret: any) => {
+    ret.id = ret._id.toString();
+    delete ret.__v;
+    return ret;
+  }
+});
 
 export default mongoose.models.Cart ||
   mongoose.model<ICart>("Cart", CartSchema);

@@ -3,6 +3,7 @@ import {
   createProduct,
   getAllProducts,
   getProductById,
+  getSupplierProducts,
   updateProduct,
   deleteProduct
 } from "../controllers/product.controller";
@@ -12,6 +13,10 @@ const router = express.Router();
 
 /* PUBLIC */
 router.get("/", getAllProducts);
+
+/* SUPPLIER — must be BEFORE /:id to avoid "supplier" being treated as an ID */
+router.get("/supplier", supplierAuth, getSupplierProducts);
+
 router.get("/:id", getProductById);
 
 /* SUPPLIER */

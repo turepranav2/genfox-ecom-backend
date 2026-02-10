@@ -8,7 +8,8 @@ export const errorMiddleware = (
 ) => {
   console.error("❌ ERROR:", err.message);
 
-  res.status(500).json({
-    message: "Internal Server Error"
-  });
+  const statusCode = (err as any).statusCode || 500;
+  const message = err.message || "Internal Server Error";
+
+  res.status(statusCode).json({ message });
 };

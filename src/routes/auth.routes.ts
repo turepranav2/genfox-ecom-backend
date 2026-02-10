@@ -1,5 +1,11 @@
 import express from "express";
-import { registerUser, loginUser } from "../controllers/auth.controller";
+import {
+  registerUser,
+  loginUser,
+  getProfile,
+  updateProfile
+} from "../controllers/auth.controller";
+import { userAuth } from "../middleware/userAuth.middleware";
 
 const router = express.Router();
 
@@ -11,5 +17,7 @@ const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+router.get("/profile", userAuth, getProfile);
+router.put("/profile", userAuth, updateProfile);
 
 export default router;

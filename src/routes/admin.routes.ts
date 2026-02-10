@@ -1,25 +1,25 @@
 import express from "express";
 import { adminAuth } from "../middleware/adminAuth.middleware";
-import Supplier from "../models/Supplier";
-import { adminLogin } from "../controllers/admin.controller";
+import {
+  adminLogin,
+  getAllUsers,
+  deleteUser,
+  getAllSuppliers,
+  approveSupplier,
+  rejectSupplier
+} from "../controllers/admin.controller";
 
 const router = express.Router();
 
 router.post("/login", adminLogin);
 
-router.get("/suppliers", adminAuth, async (_req, res) => {
-  const suppliers = await Supplier.find();
-  res.json(suppliers);
-});
+/* USER MANAGEMENT */
+router.get("/users", adminAuth, getAllUsers);
+router.delete("/users/:id", adminAuth, deleteUser);
 
-router.put("/suppliers/:id/approve", adminAuth, async (req, res) => {
-  await Supplier.findByIdAndUpdate(req.params.id, { status: "APPROVED" });
-  res.json({ message: "Supplier approved" });
-});
-
-router.put("/suppliers/:id/reject", adminAuth, async (req, res) => {
-  await Supplier.findByIdAndUpdate(req.params.id, { status: "REJECTED" });
-  res.json({ message: "Supplier rejected" });
-});
+/* SUPPLIER MANAGEMENT */
+router.get("/suppliers", adminAuth, getAllSuppliers);
+router.put("/suppliers/:id/approve", adminAuth, approveSupplier);
+router.put("/suppliers/:id/reject", adminAuth, rejectSupplier);
 
 export default router;

@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
+import helmet from "helmet";
 
 import { errorMiddleware } from "./middleware/error.middleware";
 import authRoutes from "./routes/auth.routes";
@@ -11,10 +12,22 @@ import orderRoutes from "./routes/order.routes";
 import cartRoutes from "./routes/cart.routes";
 import dashboardRoutes from "./routes/dashboard.routes";
 import adminRoutes from "./routes/admin.routes";
+import uploadRoutes from "./routes/upload.routes";
 
 const app = express();
 
-app.use(cors());
+/* SECURITY */
+app.use(helmet());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "https://genfox-ecom.vercel.app"
+    ],
+    credentials: true
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
@@ -33,14 +46,9 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/upload", uploadRoutes);
 
 /* ERROR HANDLER (LAST) */
 app.use(errorMiddleware);
-app.use(
-  cors({
-    origin: ["http://localhost:5173",],
-    credentials: true
-  })
-);
 
 export default app;

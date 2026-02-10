@@ -8,15 +8,20 @@ export const createProductService = async (
   return Product.create(data);
 };
 
-/* GET ALL */
+/* GET ALL (public — only active products) */
 export const getAllProductsService = async () => {
-  return Product.find().populate("supplier", "name email");
+  return Product.find({ isActive: true }).populate("supplierId", "name email");
 };
 
 /* GET BY ID */
 export const getProductByIdService = async (id: string) => {
   if (!Types.ObjectId.isValid(id)) return null;
-  return Product.findById(id).populate("supplier", "name email");
+  return Product.findById(id).populate("supplierId", "name email");
+};
+
+/* GET SUPPLIER'S OWN PRODUCTS */
+export const getSupplierProductsService = async (supplierId: string) => {
+  return Product.find({ supplierId }).sort({ createdAt: -1 });
 };
 
 /* UPDATE (SUPPLIER ONLY) */
@@ -28,7 +33,7 @@ export const updateProductService = async (
   if (!Types.ObjectId.isValid(productId)) return null;
 
   return Product.findOneAndUpdate(
-    { _id: productId, supplier: supplierId },
+    { _id: productId, supplierId },
     updateData,
     { new: true }
   );
@@ -43,6 +48,6 @@ export const deleteProductService = async (
 
   return Product.findOneAndDelete({
     _id: productId,
-    supplier: supplierId
+    supplierId
   });
 };

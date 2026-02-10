@@ -4,6 +4,7 @@ import {
   createProductService,
   getAllProductsService,
   getProductByIdService,
+  getSupplierProductsService,
   updateProductService,
   deleteProductService
 } from "../services/product.service";
@@ -14,33 +15,64 @@ export const createProduct = async (
   req: SupplierRequest,
   res: Response
 ) => {
-  const { name, price, stock, category, images } = req.body;
+  try {
+    const { name, price, stock, category, images, description, mrp } = req.body;
 
-  if (!name || price == null || stock == null || !category) {
-    return res.status(400).json({ message: "Missing required fields" });
+    if (!name || price == null || stock == null || !category) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    if (!req.supplierId) {
+      return res.status(401).json({ message: "Unauthorized supplier" });
+    }
+
+    // Validate image URLs
+    if (images && images.length > 0) {
+      for (const img of images) {
+        if (!img.startsWith("http://") && !img.startsWith("https://")) {
+          return res.status(400).json({
+            message:
+              "Image URLs must be absolute URLs (starting with http:// or https://)"
+          });
+        }
+      }
+    }
+
+    const supplierObjectId = new Types.ObjectId(req.supplierId);
+
+    const product = await createProductService({
+      name,
+      price,
+      stock,
+      category,
+      images,
+      description: description || "",
+      mrp: mrp || 0,
+      supplierId: supplierObjectId
+    });
+
+    res.status(201).json(product);
+  } catch (err: any) {
+    res.status(400).json({ message: err.message });
   }
-
-  if (!req.supplierId) {
-    return res.status(401).json({ message: "Unauthorized supplier" });
-  }
-
-  const supplierObjectId = new Types.ObjectId(req.supplierId);
-
-  const product = await createProductService({
-    name,
-    price,
-    stock,
-    category,
-    images,
-    supplier: supplierObjectId
-  });
-
-  res.status(201).json(product);
 };
 
 /* PUBLIC: GET ALL PRODUCTS */
 export const getAllProducts = async (_req: Request, res: Response) => {
   const products = await getAllProductsService();
+  res.json(products);
+};
+
+/* SUPPLIER: GET OWN PRODUCTS */
+export const getSupplierProducts = async (
+  req: SupplierRequest,
+  res: Response
+) => {
+  if (!req.supplierId) {
+    return res.status(401).json({ message: "Unauthorized supplier" });
+  }
+
+  const products = await getSupplierProductsService(req.supplierId);
   res.json(products);
 };
 
@@ -72,6 +104,18 @@ export const updateProduct = async (
     ? req.params.id[0]
     : req.params.id;
 
+  // Validate image URLs if provided
+  if (req.body.images && req.body.images.length > 0) {
+    for (const img of req.body.images) {
+      if (!img.startsWith("http://") && !img.startsWith("https://")) {
+        return res.status(400).json({
+          message:
+            "Image URLs must be absolute URLs (starting with http:// or https://)"
+        });
+      }
+    }
+  }
+
   const supplierObjectId = new Types.ObjectId(req.supplierId);
 
   const product = await updateProductService(
@@ -81,7 +125,9 @@ export const updateProduct = async (
   );
 
   if (!product) {
-    return res.status(404).json({ message: "Product not found or unauthorized" });
+    return res
+      .status(404)
+      .json({ message: "Product not found or unauthorized" });
   }
 
   res.json(product);
@@ -105,7 +151,9 @@ export const deleteProduct = async (
   const product = await deleteProductService(id, supplierObjectId);
 
   if (!product) {
-    return res.status(404).json({ message: "Product not found or unauthorized" });
+    return res
+      .status(404)
+      .json({ message: "Product not found or unauthorized" });
   }
 
   res.json({ message: "Product deleted successfully" });

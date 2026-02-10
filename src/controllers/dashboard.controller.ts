@@ -12,38 +12,46 @@ export const getAdminDashboardMetrics = async (
   const [
     totalUsers,
     totalSuppliers,
-    approvedSuppliers,
     pendingSuppliers,
     totalProducts,
-    orders
+    totalOrders
   ] = await Promise.all([
     User.countDocuments(),
     Supplier.countDocuments(),
-    Supplier.countDocuments({ status: "APPROVED" }),
     Supplier.countDocuments({ status: "PENDING" }),
     Product.countDocuments(),
-    Order.find()
+    Order.countDocuments()
   ]);
 
-  const totalRevenue = orders.reduce(
-    (sum: number, o: any) => sum + o.totalAmount,
-    0
-  );
+  const revenueAgg = await Order.aggregate([
+    {
+      $group: {
+        _id: null,
+        totalRevenue: { $sum: "$total" },
+        totalCommission: { $sum: "$commission" }
+      }
+    }
+  ]);
 
-  const totalCommission = orders.reduce(
-    (sum: number, o: any) => sum + (o.commissionAmount || 0),
-    0
-  );
+  const totalRevenue =
+    revenueAgg.length > 0 ? revenueAgg[0].totalRevenue : 0;
+  const totalCommission =
+    revenueAgg.length > 0 ? revenueAgg[0].totalCommission : 0;
+
+  const recentOrders = await Order.find()
+    .populate("userId", "name email phone")
+    .sort({ createdAt: -1 })
+    .limit(10);
 
   res.json({
     totalUsers,
     totalSuppliers,
-    approvedSuppliers,
     pendingSuppliers,
     totalProducts,
-    totalOrders: orders.length,
+    totalOrders,
     totalRevenue,
-    totalCommission
+    totalCommission,
+    recentOrders
   });
 };
 
@@ -54,23 +62,27 @@ export const getSupplierDashboardMetrics = async (
 ) => {
   const supplierId = req.supplierId;
 
-  const [products, orders] = await Promise.all([
-    Product.find({ supplier: supplierId }),
-    Order.find({ supplier: supplierId }).sort({ createdAt: -1 })
-  ]);
+  const productsCount = await Product.countDocuments({ supplierId });
 
-  const revenue = orders.reduce(
-    (sum: number, o: any) => sum + o.supplierEarning,
-    0
-  );
+  const orders = await Order.find({ "items.supplierId": supplierId })
+    .populate("userId", "name email phone")
+    .populate("items.productId", "name price images")
+    .sort({ createdAt: -1 });
 
-  const commissionPaid = orders.reduce(
-    (sum: number, o: any) => sum + o.commissionAmount,
-    0
-  );
+  // Calculate revenue from this supplier's items
+  let revenue = 0;
+  for (const order of orders) {
+    for (const item of order.items as any[]) {
+      if (item.supplierId?.toString() === supplierId) {
+        revenue += item.price * item.quantity;
+      }
+    }
+  }
+
+  const commissionPaid = revenue * 0.1; // 10% platform commission
 
   res.json({
-    productsCount: products.length,
+    productsCount,
     ordersCount: orders.length,
     revenue,
     commissionPaid,

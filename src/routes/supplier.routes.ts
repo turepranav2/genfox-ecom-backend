@@ -1,23 +1,20 @@
 import express from "express";
-import Supplier from "../models/Supplier";
-import { adminAuth } from "../middleware/adminAuth.middleware";
+import { supplierAuth } from "../middleware/supplierAuth.middleware";
+import {
+  getSupplierProfile,
+  updateSupplierProfile,
+  getPaymentSummary,
+  getPaymentTransactions
+} from "../controllers/supplier.controller";
 
 const router = express.Router();
 
-/* ADMIN ONLY */
-router.get("/", adminAuth, async (_req, res) => {
-  const suppliers = await Supplier.find();
-  res.json(suppliers);
-});
+/* PROFILE */
+router.get("/profile", supplierAuth, getSupplierProfile);
+router.put("/profile", supplierAuth, updateSupplierProfile);
 
-router.put("/:id/approve", adminAuth, async (req, res) => {
-  await Supplier.findByIdAndUpdate(req.params.id, { status: "APPROVED" });
-  res.json({ message: "Supplier approved" });
-});
-
-router.put("/:id/reject", adminAuth, async (req, res) => {
-  await Supplier.findByIdAndUpdate(req.params.id, { status: "REJECTED" });
-  res.json({ message: "Supplier rejected" });
-});
+/* PAYMENTS */
+router.get("/payments/summary", supplierAuth, getPaymentSummary);
+router.get("/payments/transactions", supplierAuth, getPaymentTransactions);
 
 export default router;
