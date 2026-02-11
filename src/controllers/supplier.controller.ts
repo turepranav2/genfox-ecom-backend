@@ -28,11 +28,11 @@ export const registerSupplier = async (req: Request, res: Response) => {
     name,
     email,
     password: hashedPassword,
-    status: "PENDING"
+    status: "APPROVED"
   });
 
   res.status(201).json({
-    message: "Supplier registered. Awaiting admin approval."
+    message: "Supplier registered successfully! You can now login."
   });
 };
 
@@ -50,8 +50,8 @@ export const loginSupplier = async (req: Request, res: Response) => {
     return res.status(404).json({ message: "Invalid credentials" });
   }
 
-  if (supplier.status !== "APPROVED") {
-    return res.status(403).json({ message: "Supplier not approved" });
+  if (supplier.status === "REJECTED") {
+    return res.status(403).json({ message: "Supplier account has been revoked. Contact admin." });
   }
 
   const isMatch = await bcrypt.compare(password, supplier.password);

@@ -11,6 +11,7 @@ export interface IProduct {
   images?: string[];
   supplierId: Types.ObjectId;
   isActive?: boolean;
+  approvalStatus?: "PENDING" | "APPROVED" | "REJECTED";
   ratings?: {
     average: number;
     count: number;
@@ -76,6 +77,11 @@ const ProductSchema = new Schema<IProduct>(
       type: Boolean,
       default: true
     },
+    approvalStatus: {
+      type: String,
+      enum: ["PENDING", "APPROVED", "REJECTED"],
+      default: "PENDING"
+    },
     ratings: {
       average: { type: Number, default: 0, min: 0, max: 5 },
       count: { type: Number, default: 0 }
@@ -97,6 +103,7 @@ ProductSchema.pre("save", function () {
 
 ProductSchema.index({ supplierId: 1 });
 ProductSchema.index({ category: 1 });
+ProductSchema.index({ approvalStatus: 1 });
 ProductSchema.index({ name: "text", description: "text" });
 
 ProductSchema.set("toJSON", {

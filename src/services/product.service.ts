@@ -8,9 +8,9 @@ export const createProductService = async (
   return Product.create(data);
 };
 
-/* GET ALL (public — only active products) */
+/* GET ALL (public — only active & approved products) */
 export const getAllProductsService = async () => {
-  return Product.find({ isActive: true }).populate("supplierId", "name email");
+  return Product.find({ isActive: true, approvalStatus: "APPROVED" }).populate("supplierId", "name email");
 };
 
 /* GET BY ID */
@@ -50,4 +50,31 @@ export const deleteProductService = async (
     _id: productId,
     supplierId
   });
+};
+
+/* ────────── ADMIN PRODUCT SERVICES ────────── */
+
+/* GET ALL PRODUCTS (admin — all statuses) */
+export const getAllProductsAdminService = async () => {
+  return Product.find({}).populate("supplierId", "name email").sort({ createdAt: -1 });
+};
+
+/* APPROVE PRODUCT */
+export const approveProductService = async (productId: string) => {
+  if (!Types.ObjectId.isValid(productId)) return null;
+  return Product.findByIdAndUpdate(
+    productId,
+    { approvalStatus: "APPROVED" },
+    { new: true }
+  ).populate("supplierId", "name email");
+};
+
+/* REJECT PRODUCT */
+export const rejectProductService = async (productId: string) => {
+  if (!Types.ObjectId.isValid(productId)) return null;
+  return Product.findByIdAndUpdate(
+    productId,
+    { approvalStatus: "REJECTED" },
+    { new: true }
+  ).populate("supplierId", "name email");
 };

@@ -54,6 +54,14 @@ const migrate = async () => {
     { $set: { ratings: { average: 0, count: 0 } } }
   );
 
+  // Add approvalStatus for existing products (Feature 2: Product Approval System)
+  // Existing products are set to APPROVED since they were already visible
+  const approvalMigration = await db.collection("products").updateMany(
+    { approvalStatus: { $exists: false } },
+    { $set: { approvalStatus: "APPROVED" } }
+  );
+  console.log(`  ✅ Added approvalStatus=APPROVED to existing products (${approvalMigration.modifiedCount} docs)`);
+
   // Generate slugs for products that don't have one
   const productsCursor = db.collection("products").find({
     $or: [{ slug: { $exists: false } }, { slug: null }, { slug: "" }]
@@ -313,6 +321,13 @@ const migrate = async () => {
     { $set: { phone: "" } }
   );
   console.log("  ✅ Default fields added (gstin, address, bankDetails, commissionRate)");
+
+  // Auto-approve all PENDING suppliers (Feature 3: no approval gate for supplier accounts)
+  const supplierAutoApprove = await db.collection("suppliers").updateMany(
+    { status: "PENDING" },
+    { $set: { status: "APPROVED" } }
+  );
+  console.log(`  ✅ Auto-approved PENDING suppliers (${supplierAutoApprove.modifiedCount} updated)`);
 
   // ─────────────────────────────────────────────────
   // 7. PAYMENTS: rename order → orderId (if applicable)

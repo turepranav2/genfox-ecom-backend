@@ -12,7 +12,7 @@ export const searchProducts = async (query: any) => {
     limit = 10
   } = query;
 
-  const filter: any = { isActive: true };
+  const filter: any = { isActive: true, approvalStatus: "APPROVED" };
 
   if (category) {
     const categories = await Category.find({

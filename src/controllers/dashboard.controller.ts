@@ -14,12 +14,14 @@ export const getAdminDashboardMetrics = async (
     totalSuppliers,
     pendingSuppliers,
     totalProducts,
+    pendingProducts,
     totalOrders
   ] = await Promise.all([
     User.countDocuments(),
     Supplier.countDocuments(),
     Supplier.countDocuments({ status: "PENDING" }),
     Product.countDocuments(),
+    Product.countDocuments({ approvalStatus: "PENDING" }),
     Order.countDocuments()
   ]);
 
@@ -48,6 +50,7 @@ export const getAdminDashboardMetrics = async (
     totalSuppliers,
     pendingSuppliers,
     totalProducts,
+    pendingProducts,
     totalOrders,
     totalRevenue,
     totalCommission,

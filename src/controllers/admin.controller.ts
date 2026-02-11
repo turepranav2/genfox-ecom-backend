@@ -5,6 +5,11 @@ import User from "../models/User";
 import Order from "../models/Order";
 import Supplier from "../models/Supplier";
 import Product from "../models/Product";
+import {
+  getAllProductsAdminService,
+  approveProductService,
+  rejectProductService
+} from "../services/product.service";
 
 export const adminLogin = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -117,4 +122,40 @@ export const rejectSupplier = async (req: Request, res: Response) => {
     return res.status(404).json({ message: "Supplier not found" });
   }
   res.json({ supplier, message: "Supplier rejected" });
+};
+
+/* ────────── ADMIN PRODUCT MANAGEMENT ────────── */
+
+/* GET ALL PRODUCTS (admin — all statuses) */
+export const getAllProductsAdmin = async (_req: Request, res: Response) => {
+  try {
+    const products = await getAllProductsAdminService();
+    res.json(products);
+  } catch (err: any) {
+    res.status(500).json({ message: "Failed to fetch products" });
+  }
+};
+
+/* APPROVE PRODUCT */
+export const approveProduct = async (req: Request, res: Response) => {
+  const id =
+    typeof req.params.id === "string" ? req.params.id : req.params.id[0];
+
+  const product = await approveProductService(id);
+  if (!product) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+  res.json({ product, message: "Product approved" });
+};
+
+/* REJECT PRODUCT */
+export const rejectProduct = async (req: Request, res: Response) => {
+  const id =
+    typeof req.params.id === "string" ? req.params.id : req.params.id[0];
+
+  const product = await rejectProductService(id);
+  if (!product) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+  res.json({ product, message: "Product rejected" });
 };
