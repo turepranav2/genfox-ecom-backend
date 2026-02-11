@@ -80,7 +80,6 @@ CategorySchema.pre("save", function () {
   });
 });
 
-CategorySchema.index({ slug: 1 }, { unique: true });
 CategorySchema.index({ supplierId: 1 });
 
 CategorySchema.set("toJSON", {

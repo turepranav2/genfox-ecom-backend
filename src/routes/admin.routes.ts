@@ -11,6 +11,13 @@ import {
   approveProduct,
   rejectProduct
 } from "../controllers/admin.controller";
+import {
+  getAllBanners,
+  createBanner,
+  updateBanner,
+  deleteBanner,
+  reorderBanners
+} from "../controllers/banner.controller";
 
 const router = express.Router();
 
@@ -29,5 +36,12 @@ router.put("/suppliers/:id/reject", adminAuth, rejectSupplier);
 router.get("/products", adminAuth, getAllProductsAdmin);
 router.put("/products/:id/approve", adminAuth, approveProduct);
 router.put("/products/:id/reject", adminAuth, rejectProduct);
+
+/* BANNER MANAGEMENT */
+router.get("/banners", adminAuth, getAllBanners);
+router.post("/banners", adminAuth, createBanner);
+router.put("/banners/reorder", adminAuth, reorderBanners);
+router.put("/banners/:id", adminAuth, updateBanner);
+router.delete("/banners/:id", adminAuth, deleteBanner);
 
 export default router;
