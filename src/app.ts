@@ -13,6 +13,8 @@ import cartRoutes from "./routes/cart.routes";
 import dashboardRoutes from "./routes/dashboard.routes";
 import adminRoutes from "./routes/admin.routes";
 import uploadRoutes from "./routes/upload.routes";
+import categoryRoutes from "./routes/category.routes";
+import bannerRoutes from "./routes/banner.routes";
 
 const app = express();
 
@@ -47,6 +49,8 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/banners", bannerRoutes);
 
 /* ERROR HANDLER (LAST) */
 app.use(errorMiddleware);

@@ -73,6 +73,7 @@ export const getUserOrdersService = (userId: string) => {
 export const getSupplierOrdersService = (supplierId: string) => {
   return Order.find({ "items.supplierId": supplierId })
     .populate("userId", "name email phone")
+    .populate("items.supplierId", "name email phone")
     .populate("items.productId", "name price images")
     .sort({ createdAt: -1 });
 };
@@ -81,11 +82,8 @@ export const getSupplierOrdersService = (supplierId: string) => {
 export const getAllOrdersService = () => {
   return Order.find()
     .populate("userId", "name email phone")
-    .populate({
-      path: "items.productId",
-      select: "name price images supplierId",
-      populate: { path: "supplierId", select: "name email" }
-    })
+    .populate("items.supplierId", "name email phone")
+    .populate("items.productId", "name images price supplierId")
     .sort({ createdAt: -1 });
 };
 

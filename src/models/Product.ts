@@ -8,6 +8,7 @@ export interface IProduct {
   mrp?: number;
   stock: number;
   category: string;
+  subcategory?: string;
   images?: string[];
   supplierId: Types.ObjectId;
   isActive?: boolean;
@@ -56,7 +57,13 @@ const ProductSchema = new Schema<IProduct>(
     },
     category: {
       type: String,
-      required: [true, "Category is required"]
+      required: [true, "Category is required"],
+      trim: true
+    },
+    subcategory: {
+      type: String,
+      default: "",
+      trim: true
     },
     images: [
       {
@@ -110,6 +117,10 @@ ProductSchema.set("toJSON", {
   virtuals: true,
   transform: (_doc: any, ret: any) => {
     ret.id = ret._id.toString();
+    // Map populated supplierId to supplier
+    if (ret.supplierId && typeof ret.supplierId === "object") {
+      ret.supplier = ret.supplierId;
+    }
     delete ret.__v;
     return ret;
   }

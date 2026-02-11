@@ -16,7 +16,7 @@ export const createProduct = async (
   res: Response
 ) => {
   try {
-    const { name, price, stock, category, images, description, mrp } = req.body;
+    const { name, price, stock, category, subcategory, images, description, mrp } = req.body;
 
     if (!name || price == null || stock == null || !category) {
       return res.status(400).json({ message: "Missing required fields" });
@@ -45,6 +45,7 @@ export const createProduct = async (
       price,
       stock,
       category,
+      subcategory: subcategory || "",
       images,
       description: description || "",
       mrp: mrp || 0,

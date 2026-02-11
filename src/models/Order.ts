@@ -99,6 +99,24 @@ OrderSchema.set("toJSON", {
   virtuals: true,
   transform: (_doc: any, ret: any) => {
     ret.id = ret._id.toString();
+    // Map populated userId to user
+    if (ret.userId && typeof ret.userId === "object") {
+      ret.user = ret.userId;
+      delete ret.userId;
+    }
+    // Map populated supplierId in items
+    if (ret.items) {
+      ret.items = ret.items.map((item: any) => {
+        if (item.supplierId && typeof item.supplierId === "object") {
+          item.supplier = item.supplierId;
+          delete item.supplierId;
+        }
+        if (item.productId && typeof item.productId === "object") {
+          item.product = item.productId;
+        }
+        return item;
+      });
+    }
     delete ret.__v;
     return ret;
   }
